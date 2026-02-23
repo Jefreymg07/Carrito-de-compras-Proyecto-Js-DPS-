@@ -9,23 +9,18 @@ class Carrito {
   }
 
   // --- MÉTODO 1: AGREGAR PRODUCTO ---
-  // Verifica stock, agrega al carrito y resta del inventario global.
   agregarProducto(id, cantidad) {
     const buscarProducto = inventario.find((producto) => producto.id === id);
 
-    // Validamos si el producto existe y si hay suficiente stock
     if (buscarProducto && buscarProducto.stock >= cantidad) {
-      
-      // Buscamos si ya existe en el carrito para no duplicarlo
       const carritoProductos = this.carrito.find(
-        (carritoProductoActual) => carritoProductoActual.id === buscarProducto.id
+        (carritoProductoActual) =>
+          carritoProductoActual.id === buscarProducto.id,
       );
 
       if (carritoProductos) {
-        // Si ya está, solo sumamos la cantidad
         carritoProductos.cantidad += cantidad;
       } else {
-        // Si no está, lo agregamos como nuevo objeto
         this.carrito.push({
           id: buscarProducto.id,
           nombre: buscarProducto.nombreProducto,
@@ -33,8 +28,6 @@ class Carrito {
           cantidad: cantidad,
         });
       }
-      
-      // Restamos el stock del inventario global (Simulación de base de datos)
       buscarProducto.stock -= cantidad;
     } else {
       console.error(`Error: No hay suficiente stock para el producto ID ${id}`);
@@ -42,56 +35,77 @@ class Carrito {
   }
 
   // --- MÉTODO 2: ELIMINAR PRODUCTO COMPLETO ---
-  // Elimina el ítem del carrito y devuelve TODO el stock a la tienda.
   eliminarProducto(id) {
-    const productoParaEliminar = this.carrito.find((producto) => producto.id === id);
+    const productoParaEliminar = this.carrito.find(
+      (producto) => producto.id === id,
+    );
 
     if (productoParaEliminar) {
       const productOriginal = inventario.find(
-        (productoDevuelto) => productoDevuelto.id === productoParaEliminar.id
+        (productoDevuelto) => productoDevuelto.id === productoParaEliminar.id,
       );
 
-      // Devolvemos todo el stock
       productOriginal.stock += productoParaEliminar.cantidad;
 
-      // Filtramos para quitar el producto del carrito
       this.carrito = this.carrito.filter(
-        (productosActuales) => productosActuales.id !== id
+        (productosActuales) => productosActuales.id !== id,
       );
     }
   }
 
   // --- MÉTODO 3: ELIMINAR POR UNIDADES ---
-  // Resta una cantidad específica y devuelve stock parcial.
   eliminarUnidades(id, cantidad) {
     const unidadProducto = this.carrito.find((producto) => producto.id === id);
 
     if (unidadProducto) {
       const unidadesInventario = inventario.find(
-        (producto) => producto.id === unidadProducto.id
+        (producto) => producto.id === unidadProducto.id,
       );
-      
-      // 1. Devolvemos stock a la tienda
-      unidadesInventario.stock += cantidad;
 
-      // 2. Restamos cantidad del carrito
+      unidadesInventario.stock += cantidad;
       unidadProducto.cantidad -= cantidad;
 
-      // 3. Validación de limpieza: Si llega a 0, se borra del carrito
       if (unidadProducto.cantidad <= 0) {
         this.carrito = this.carrito.filter(
-          (productosActuales) => productosActuales.id !== id
+          (productosActuales) => productosActuales.id !== id,
         );
       }
     }
   }
 
   // --- MÉTODO 4: CALCULAR TOTAL ---
-  // Usa reduce para sumar (Precio * Cantidad) de todos los items.
   calcularTotalCompra() {
     const pagaTotal = this.carrito.reduce((pagaAcumulada, producto) => {
       return pagaAcumulada + producto.precio * producto.cantidad;
     }, 0);
     return pagaTotal;
   }
+}
+
+// ==========================================
+// 🔌 CONEXIÓN CON EL HTML (INTERACTIVIDAD)
+// ==========================================
+
+// 1. Inicializamos tu carrito globalmente para que exista al cargar la página
+let miCompra = new Carrito();
+
+// 2. Función que se ejecuta cuando el usuario hace clic en "Seleccionar Producto" en el HTML
+function procesarSeleccion(id) {
+  // Capturamos el número que el usuario escribió en el input
+  const inputCant = document.getElementById(`cant-${id}`);
+  const cantidadSeleccionada = parseInt(inputCant.value);
+
+  // Ejecutamos TU método poderoso para agregarlo a la lógica
+  miCompra.agregarProducto(id, cantidadSeleccionada);
+
+  // Actualizamos el número de stock visual en la tarjeta
+  const productoActualizado = inventario.find((p) => p.id === id);
+  document.getElementById(`stock-${id}`).innerText = productoActualizado.stock;
+
+  // Devolvemos el input a 1 por comodidad del usuario
+  inputCant.value = 1;
+
+  // Mensaje en consola para que veas cómo se va llenando tu carrito
+  console.log("🛒 Carrito actual:", miCompra.carrito);
+  console.log("💵 Total a pagar: $", miCompra.calcularTotalCompra());
 }
