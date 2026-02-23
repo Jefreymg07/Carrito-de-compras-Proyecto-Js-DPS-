@@ -1,11 +1,21 @@
 /* CLASE CARRITO (Lógica de Negocio)
   Autor: Persona 2 (Jefrey)
-  Responsabilidad: Manejar la lógica de agregar, eliminar y calcular totales.
+  Responsabilidad: Manejar la lógica de agregar, eliminar y guardar en LocalStorage.
 */
 
 class Carrito {
   constructor() {
-    this.carrito = []; // Inicializamos el carrito vacío
+    // 1. Cuando la página carga, buscamos si ya había un carrito guardado en el navegador
+    const carritoGuardado = localStorage.getItem("carritoLS");
+
+    // Si hay datos guardados, los usamos. Si no, iniciamos el array vacío []
+    this.carrito = carritoGuardado ? JSON.parse(carritoGuardado) : [];
+  }
+
+  // --- NUEVO MÉTODO: Guarda el carrito y el inventario en el disco duro del navegador ---
+  sincronizarStorage() {
+    localStorage.setItem("carritoLS", JSON.stringify(this.carrito));
+    localStorage.setItem("inventarioLS", JSON.stringify(inventario));
   }
 
   // --- MÉTODO 1: AGREGAR PRODUCTO ---
@@ -29,8 +39,11 @@ class Carrito {
         });
       }
       buscarProducto.stock -= cantidad;
+
+      // ¡AQUÍ GUARDAMOS LOS CAMBIOS!
+      this.sincronizarStorage();
     } else {
-      console.error(`Error: No hay suficiente stock para el producto ID ${id}`);
+      alert(`Lo sentimos, no hay suficiente stock.`);
     }
   }
 
@@ -50,6 +63,9 @@ class Carrito {
       this.carrito = this.carrito.filter(
         (productosActuales) => productosActuales.id !== id,
       );
+
+      // ¡AQUÍ GUARDAMOS LOS CAMBIOS!
+      this.sincronizarStorage();
     }
   }
 
@@ -70,6 +86,9 @@ class Carrito {
           (productosActuales) => productosActuales.id !== id,
         );
       }
+
+      // ¡AQUÍ GUARDAMOS LOS CAMBIOS!
+      this.sincronizarStorage();
     }
   }
 
@@ -86,26 +105,24 @@ class Carrito {
 // 🔌 CONEXIÓN CON EL HTML (INTERACTIVIDAD)
 // ==========================================
 
-// 1. Inicializamos tu carrito globalmente para que exista al cargar la página
+// 1. Inicializamos tu carrito globalmente
 let miCompra = new Carrito();
 
-// 2. Función que se ejecuta cuando el usuario hace clic en "Seleccionar Producto" en el HTML
+// 2. Función que se ejecuta cuando el usuario hace clic en "Seleccionar Producto"
 function procesarSeleccion(id) {
-  // Capturamos el número que el usuario escribió en el input
   const inputCant = document.getElementById(`cant-${id}`);
   const cantidadSeleccionada = parseInt(inputCant.value);
 
-  // Ejecutamos TU método poderoso para agregarlo a la lógica
+  // Ejecutamos TU método poderoso
   miCompra.agregarProducto(id, cantidadSeleccionada);
 
   // Actualizamos el número de stock visual en la tarjeta
   const productoActualizado = inventario.find((p) => p.id === id);
   document.getElementById(`stock-${id}`).innerText = productoActualizado.stock;
 
-  // Devolvemos el input a 1 por comodidad del usuario
+  // Devolvemos el input a 1
   inputCant.value = 1;
 
-  // Mensaje en consola para que veas cómo se va llenando tu carrito
   console.log("🛒 Carrito actual:", miCompra.carrito);
   console.log("💵 Total a pagar: $", miCompra.calcularTotalCompra());
 }
