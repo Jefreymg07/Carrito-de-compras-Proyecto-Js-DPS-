@@ -211,6 +211,7 @@ elementosUI.btnPagar.addEventListener("click", () => {
     alert("Tu carrito está vacío.");
     return;
   }
+  cerrarModalCarrito();
   alert(`Compra realizada por ${formatearDinero(miCompra.calcularTotalCompra())}`);
   miCompra.carrito = [];
   miCompra.sincronizarStorage();
