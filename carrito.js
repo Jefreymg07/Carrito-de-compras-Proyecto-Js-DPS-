@@ -108,6 +108,7 @@ class Carrito {
 // 1. Inicializamos tu carrito globalmente
 let miCompra = new Carrito();
 
+// Imágenes de los productos
 const imagenesProductos = {
   1: "https://comedera.com/wp-content/uploads/sites/9/2023/05/Pupusas-de-queso-shutterstock_1803502444.jpg",
   2: "https://www.recetassalvador.com/base/stock/Recipe/empanadas-salvadorenas/empanadas-salvadorenas_web.jpg.webp",
@@ -117,6 +118,7 @@ const imagenesProductos = {
   6: "https://i.ytimg.com/vi/dp6oQ7cekPc/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLD_uCGqj37uh-_NzS1hLcYF4KvUxA",
 };
 
+//Seleccionamos los elementos del DOM que vamos a usar para mostrar el carrito y manejar eventos
 const elementosUI = {
   btnCarrito: document.getElementById("btn-carrito"),
   modalCarrito: document.getElementById("modal-carrito"),
@@ -140,7 +142,7 @@ function actualizarStocksVisuales() {
     }
   });
 }
-
+// Actualiza el contador del carrito en la esquina del botón cada vez que se agrega o elimina un producto
 function actualizarContadorCarrito() {
   const totalUnidades = miCompra.carrito.reduce(
     (acumulado, producto) => acumulado + producto.cantidad,
