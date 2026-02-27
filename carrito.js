@@ -43,7 +43,11 @@ class Carrito {
       // ¡AQUÍ GUARDAMOS LOS CAMBIOS!
       this.sincronizarStorage();
     } else {
-      alert(`Lo sentimos, no hay suficiente stock.`);
+      Swal.fire({
+        text: 'Lo sentimos, no hay suficiente stock.',
+        icon: 'info',
+        confirmButtonText: 'Aceptar'
+      })
     }
   }
 
@@ -128,12 +132,21 @@ const elementosUI = {
   contenedorItems: document.getElementById("carrito-items"),
   total: document.getElementById("carrito-total"),
   contador: document.getElementById("contador-carrito"),
+  factura: document.getElementById("factura"),
+  modalFactura: document.getElementById("modal-factura"),
+  btnCerrar: document.getElementById("btn-cerrar-factura"),
+  btnImprimir: document.getElementById("btn-imprimir-factura"),
+  subtotalFactura: document.getElementById("subtotal"),
+  totalFactura: document.getElementById("factura-total"),
+  propinas: document.getElementById("propina"),
+  FechaHoras: document.getElementById("hora")
 };
 
 function formatearDinero(valor) {
   return `$ ${valor.toFixed(2)}`;
 }
 
+//Inventario disponible
 function actualizarStocksVisuales() {
   inventario.forEach((producto) => {
     const stockElemento = document.getElementById(`stock-${producto.id}`);
@@ -151,6 +164,16 @@ function actualizarContadorCarrito() {
   elementosUI.contador.innerText = totalUnidades;
 }
 
+//Oculta y hace aparecer la factura
+function abrirFactura() {
+  elementosUI.modalFactura.classList.remove("oculto");
+}
+
+function cerrarFactura() {
+  elementosUI.modalFactura.classList.add("oculto");
+}
+
+//Oculta y hace aparecer el carrito
 function abrirModalCarrito() {
   renderizarCarritoEnModal();
   elementosUI.modalCarrito.classList.remove("oculto");
@@ -204,21 +227,93 @@ function renderizarCarritoEnModal() {
   )}`;
 }
 
+//Convertir html en imagen para luego pasar a pdf
+function ImprimirFactura() {
+  html2canvas(elementosUI.modalFactura, { useCORS: true }).then(canvas => {
+    const imgData = canvas.toDataURL('image/png');
+    const pdf = new jspdf.jsPDF('p', 'mm', 'a4');
+
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = pdf.internal.pageSize.getHeight();
+
+    const imgWidth = pdfWidth;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+    pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+    pdf.save("factura.pdf");
+
+  console.log("Factura impresa");
+  })
+}
+
 elementosUI.btnCarrito.addEventListener("click", abrirModalCarrito);
 elementosUI.cerrarModal.addEventListener("click", cerrarModalCarrito);
 elementosUI.btnCancelar.addEventListener("click", cerrarModalCarrito);
+elementosUI.btnCerrar.addEventListener("click", cerrarFactura);
+elementosUI.btnImprimir.addEventListener("click", ImprimirFactura);
 
-elementosUI.btnPagar.addEventListener("click", () => {
-  if (!miCompra.carrito.length) {
-    alert("Tu carrito está vacío.");
-    return;
-  }
-  cerrarModalCarrito();
-  alert(`Compra realizada por ${formatearDinero(miCompra.calcularTotalCompra())}`);
+//Factura de carrito:
+function generar_factura() {
+  elementosUI.factura.innerHTML = miCompra.carrito
+    .map((producto) => {
+
+      abrirFactura();
+
+      const subtotal = producto.precio * producto.cantidad;
+
+      return `
+        <div>
+          <table>
+            <tbody>
+              <tr>
+                <td class="cantidad2">${producto.cantidad}</td>
+                <td class="producto2">${producto.nombre}</td>
+                <td class="precio-unidad2">${formatearDinero(producto.precio)}</td>
+                <td class="total2">${formatearDinero(subtotal)}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      `;
+    })
+    .join("");
+
+  //Subtotal factura
+  elementosUI.subtotalFactura.innerHTML = `SUBTOTAL ${formatearDinero(
+    miCompra.calcularTotalCompra()
+  )}`;
+
+  const propina = 1.25;
+  const ahora = new Date();
+
+  let suma = propina + miCompra.calcularTotalCompra();
+
+  elementosUI.propinas.innerHTML = `PROPINA  $ ${propina}`;
+
+  elementosUI.totalFactura.innerHTML = `TOTAL A PAGAR $ ${suma}`;
+
+  elementosUI.FechaHoras.innerHTML = `Fecha: ${ahora.toLocaleDateString()} - Hora: ${ahora.toLocaleTimeString()}`;
+
+  //reseteo de compra
   miCompra.carrito = [];
   miCompra.sincronizarStorage();
   renderizarCarritoEnModal();
   actualizarContadorCarrito();
+}
+
+elementosUI.btnPagar.addEventListener("click", () => {
+  if (!miCompra.carrito.length) {
+    Swal.fire({
+      text: `Tu carrito esta vacio`,
+      icon: 'warning',
+      confirmButtonText: 'Aceptar'
+    })
+    cerrarModalCarrito();
+    return;
+  }
+  
+  //Factura:
+  generar_factura();
 });
 
 elementosUI.modalCarrito.addEventListener("click", (event) => {
@@ -273,7 +368,12 @@ function procesarSeleccion(id) {
   const cantidadSeleccionada = parseInt(inputCant.value);
 
   if (Number.isNaN(cantidadSeleccionada) || cantidadSeleccionada < 1) {
-    alert("Debes ingresar una cantidad válida.");
+    Swal.fire({
+      title: 'Error',
+      text: 'Debes ingresar una cantidad valida',
+      icon: 'error',
+      confirmButtonText: 'Aceptar'
+    })
     inputCant.value = 1;
     return;
   }
