@@ -187,7 +187,7 @@ function renderizarCarritoEnModal() {
   if (!miCompra.carrito.length) {
     elementosUI.contenedorItems.innerHTML =
       '<p class="carrito-vacio">Tu carrito está vacío.</p>';
-    elementosUI.total.innerText = "Total: $ 0.00";
+    elementosUI.total.innerText = "Total a Pagar: $ 0.00";
     return;
   }
 
@@ -222,7 +222,7 @@ function renderizarCarritoEnModal() {
     })
     .join("");
 
-  elementosUI.total.innerText = `Total: ${formatearDinero(
+  elementosUI.total.innerText = `Total a Pagar: ${formatearDinero(
     miCompra.calcularTotalCompra(),
   )}`;
 }
