@@ -1,5 +1,4 @@
 /* CLASE CARRITO (Lógica de Negocio)
-  Autor: Persona 2 (Jefrey)
   Responsabilidad: Manejar la lógica de agregar, eliminar y guardar en LocalStorage.
 */
 
@@ -44,10 +43,10 @@ class Carrito {
       this.sincronizarStorage();
     } else {
       Swal.fire({
-        text: 'Lo sentimos, no hay suficiente stock.',
-        icon: 'info',
-        confirmButtonText: 'Aceptar'
-      })
+        text: "Lo sentimos, no hay suficiente stock.",
+        icon: "info",
+        confirmButtonText: "Aceptar",
+      });
     }
   }
 
@@ -139,7 +138,7 @@ const elementosUI = {
   subtotalFactura: document.getElementById("subtotal"),
   totalFactura: document.getElementById("factura-total"),
   propinas: document.getElementById("propina"),
-  FechaHoras: document.getElementById("hora")
+  FechaHoras: document.getElementById("hora"),
 };
 
 function formatearDinero(valor) {
@@ -229,9 +228,9 @@ function renderizarCarritoEnModal() {
 
 //Convertir html en imagen para luego pasar a pdf
 function ImprimirFactura() {
-  html2canvas(elementosUI.modalFactura, { useCORS: true }).then(canvas => {
-    const imgData = canvas.toDataURL('image/png');
-    const pdf = new jspdf.jsPDF('p', 'mm', 'a4');
+  html2canvas(elementosUI.modalFactura, { useCORS: true }).then((canvas) => {
+    const imgData = canvas.toDataURL("image/png");
+    const pdf = new jspdf.jsPDF("p", "mm", "a4");
 
     const pdfWidth = pdf.internal.pageSize.getWidth();
     const pdfHeight = pdf.internal.pageSize.getHeight();
@@ -239,11 +238,11 @@ function ImprimirFactura() {
     const imgWidth = pdfWidth;
     const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-    pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+    pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
     pdf.save("factura.pdf");
 
-  console.log("Factura impresa");
-  })
+    console.log("Factura impresa");
+  });
 }
 
 elementosUI.btnCarrito.addEventListener("click", abrirModalCarrito);
@@ -256,7 +255,6 @@ elementosUI.btnImprimir.addEventListener("click", ImprimirFactura);
 function generar_factura() {
   elementosUI.factura.innerHTML = miCompra.carrito
     .map((producto) => {
-
       abrirFactura();
 
       const subtotal = producto.precio * producto.cantidad;
@@ -280,7 +278,7 @@ function generar_factura() {
 
   //Subtotal factura
   elementosUI.subtotalFactura.innerHTML = `SUBTOTAL ${formatearDinero(
-    miCompra.calcularTotalCompra()
+    miCompra.calcularTotalCompra(),
   )}`;
 
   const propina = 1.25;
@@ -305,13 +303,13 @@ elementosUI.btnPagar.addEventListener("click", () => {
   if (!miCompra.carrito.length) {
     Swal.fire({
       text: `Tu carrito esta vacio`,
-      icon: 'warning',
-      confirmButtonText: 'Aceptar'
-    })
+      icon: "warning",
+      confirmButtonText: "Aceptar",
+    });
     cerrarModalCarrito();
     return;
   }
-  
+
   //Factura:
   generar_factura();
 });
@@ -339,7 +337,9 @@ elementosUI.contenedorItems.addEventListener("change", (event) => {
 
   const id = parseInt(event.target.dataset.id);
   const nuevaCantidad = parseInt(event.target.value);
-  const productoCarrito = miCompra.carrito.find((producto) => producto.id === id);
+  const productoCarrito = miCompra.carrito.find(
+    (producto) => producto.id === id,
+  );
 
   if (!productoCarrito || Number.isNaN(nuevaCantidad) || nuevaCantidad < 1) {
     renderizarCarritoEnModal();
@@ -369,11 +369,11 @@ function procesarSeleccion(id) {
 
   if (Number.isNaN(cantidadSeleccionada) || cantidadSeleccionada < 1) {
     Swal.fire({
-      title: 'Error',
-      text: 'Debes ingresar una cantidad valida',
-      icon: 'error',
-      confirmButtonText: 'Aceptar'
-    })
+      title: "Error",
+      text: "Debes ingresar una cantidad valida",
+      icon: "error",
+      confirmButtonText: "Aceptar",
+    });
     inputCant.value = 1;
     return;
   }
